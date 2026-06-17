@@ -87,7 +87,10 @@ public final class FaultAIPanel extends JPanel {
         AppSettings settings = settingsStore.get();
         String context = HttpContextFormatter.format(exchange, settings);
         String prompt = PromptTemplates.prompt(action, context);
-        SwingUtilities.invokeLater(() -> submit(prompt));
+        SwingUtilities.invokeLater(() -> {
+            Conversation conversation = addConversationTab(titleForExchange(exchange));
+            submitToConversation(conversation, prompt);
+        });
     }
 
     private void buildUi() {
@@ -262,6 +265,10 @@ public final class FaultAIPanel extends JPanel {
         if (conversation == null) {
             conversation = addConversationTab();
         }
+        submitToConversation(conversation, prompt);
+    }
+
+    private void submitToConversation(Conversation conversation, String prompt) {
         if (conversation.isBusy()) {
             updateStatus("Wait for the active request in this tab or stop it first.");
             return;
@@ -381,9 +388,14 @@ public final class FaultAIPanel extends JPanel {
     }
 
     private Conversation addConversationTab() {
+        return addConversationTab("Chat " + nextConversationNumber);
+    }
+
+    private Conversation addConversationTab(String title) {
         AppSettings settings = settingsStore.get();
         Conversation conversation = new Conversation(
                 nextConversationNumber++,
+                title,
                 settings.selectedProviderId()
         );
         conversations.add(conversation);
@@ -642,14 +654,42 @@ public final class FaultAIPanel extends JPanel {
                 : current.getMessage();
     }
 
+    private static String titleForExchange(HttpRequestResponse exchange) {
+        if (exchange == null || exchange.request() == null) {
+            return "HTTP request";
+        }
+
+        String request = exchange.request().toString();
+        int lineEnd = request.indexOf('\n');
+        String requestLine = lineEnd >= 0 ? request.substring(0, lineEnd) : request;
+        requestLine = requestLine.replace("\r", "").trim();
+        if (requestLine.isBlank()) {
+            return "HTTP request";
+        }
+
+        String[] parts = requestLine.split("\\s+");
+        if (parts.length >= 2) {
+            String path = parts[1];
+            int queryStart = path.indexOf('?');
+            if (queryStart >= 0) {
+                path = path.substring(0, queryStart);
+            }
+            if (path.length() > 40) {
+                path = "..." + path.substring(path.length() - 37);
+            }
+            return parts[0] + " " + path;
+        }
+        return requestLine.length() > 45 ? requestLine.substring(0, 42) + "..." : requestLine;
+    }
+
     private static final class Conversation {
         private String title;
         private final List<ChatMessage> messages = new ArrayList<>();
         private String selectedProviderId;
         private CompletableFuture<String> activeRequest;
 
-        private Conversation(int number, String selectedProviderId) {
-            this.title = "Chat " + number;
+        private Conversation(int number, String title, String selectedProviderId) {
+            this.title = title == null || title.isBlank() ? "Chat " + number : title;
             this.selectedProviderId = selectedProviderId;
         }
 

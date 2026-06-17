@@ -2,10 +2,10 @@ package com.faultlabs.burp.faultai.service;
 
 public final class PromptTemplates {
     public enum Action {
-        CHAT("Send to chat"),
-        ANALYZE("Analyze security"),
-        EXPLAIN("Explain"),
-        TEST_IDEAS("Suggest test cases");
+        CHAT("Send to new tab"),
+        ANALYZE("Analyze in new tab"),
+        EXPLAIN("Explain in new tab"),
+        TEST_IDEAS("Suggest tests in new tab");
 
         private final String label;
 

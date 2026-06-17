@@ -19,10 +19,10 @@ PortSwigger's Professional-only AI API.
 - One-click model profile switching per conversation tab without restarting Burp.
 - Clear the active conversation without removing other tabs.
 - Context-menu actions on HTTP requests and responses:
-  - Send to chat
-  - Analyze security
-  - Explain
-  - Suggest test cases
+  - Send to new tab
+  - Analyze in new tab
+  - Explain in new tab
+  - Suggest tests in new tab
 - Security-focused prompt templates with evidence and false-positive guidance.
 - Configurable system prompt, context limit, output limit, and temperature.
 - Secret redaction enabled by default.
@@ -79,6 +79,10 @@ Right-click a conversation tab to rename it, clear it, open a new tab, or close 
 Each tab keeps its own conversation history and selected model profile. This
 lets you compare outputs across providers, for example one tab on local Ollama,
 one on OpenAI/Codex, and one on Claude.
+
+When you send a request/response from Repeater, HTTP history, or another Burp
+message editor to FaultAI, the extension opens a fresh conversation tab for
+that HTTP exchange and names it from the request method and path where possible.
 
 ## Model profiles
 
